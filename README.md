@@ -12,7 +12,7 @@
 ## ✨ Features
 
 - **Issue Reporting**: Users can easily report civic issues with descriptions and images.
-- **Image Uploads**: Integrated with Cloudinary for secure and fast image storage.
+- **Image Uploads**: Integrated with Cloudinary for secure and fast image storage (using **Mongoose** for data modeling).
 - **Interactive Maps**: Uses OpenStreetMap (via Leaflet) to pinpoint issue locations.
 - **Real-time Status Tracking**: Citizens can track the progress of their reported issues.
 - **Responsive Design**: Fully optimized for mobile, tablet, and desktop views.
@@ -33,7 +33,7 @@
 ### Backend
 - **Node.js** & **Express**
 - **TypeScript** for type safety
-- **MongoDB** with **Mongoose**
+- **MongoDB** with **Mongoose** (ODM)
 - **Cloudinary** for media management
 - **JWT** for secure authentication
 - **Zod** for schema validation
@@ -59,7 +59,7 @@ CivicWatch/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/your-username/CivicWatch.git
+git clone https://github.com/klu2300033050/CivicWatch---A-complaint-raiser.git
 cd CivicWatch
 ```
 
