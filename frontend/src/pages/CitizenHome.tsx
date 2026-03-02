@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
-import { Search, Plus, MapPin, Clock, User, AlertTriangle, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Search, Plus, MapPin, Clock, User, AlertTriangle, CheckCircle2, XCircle, Loader2, Map } from "lucide-react";
 import { Link } from "react-router-dom";
 import { VITE_BACKEND_URL } from "../config/config";
 import Player from "lottie-react";
@@ -11,16 +11,21 @@ import starloader from "../assets/animations/starloder.json";
 import { motion } from "framer-motion";
 import { useLoader } from "../contexts/LoaderContext";
 import { useThemeColors } from "../hooks/useThemeColors";
+import { useAuth } from "../contexts/AuthContext";
+import UpvoteButton from "../components/UpvoteButton";
+import TrendingIssues from "../components/TrendingIssues";
+import CommentSection from "../components/CommentSection";
 
 interface Issues {
   _id: string; title: string; description: string; type: string;
   location: { latitude: number; longitude: number; address: string };
   reportedBy: string; reportedAt: string; image: string; status: string;
+  upvotes?: string[];
 }
 
 const resolveImageUrl = (url: string | null | undefined) => {
   if (!url) return "";
-  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
   return `${VITE_BACKEND_URL}${url}`;
 };
 
@@ -41,6 +46,7 @@ const CitizenHome = () => {
   const [loading, setLoading] = useState(true);
   const { hideLoader } = useLoader();
   const tc = useThemeColors();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchIssues = async () => {
@@ -103,6 +109,14 @@ const CitizenHome = () => {
               My Profile
             </button>
           </Link>
+          <Link to="/map">
+            <button className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-sm font-medium
+                               transition-all duration-200"
+              style={{ color: tc.textPri, background: tc.profileBtnBg, border: `1px solid ${tc.profileBtnBorder}` }}>
+              <Map className="h-4 w-4" style={{ color: tc.iconAmber }} />
+              <span className="hidden sm:block">Map View</span>
+            </button>
+          </Link>
         </div>
 
         {/* ── Search bar ── */}
@@ -138,24 +152,26 @@ const CitizenHome = () => {
             </span>
           </div>
 
-          {/* Cards grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-h-[680px] overflow-y-auto
-                          pr-1 scrollbar-thin scrollbar-thumb-white/10">
-            {filteredIssues.map((issue, i) => {
+          {/* Cards grid — removed max-h and overflow to allow smooth native page scrolling */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredIssues.map((issue) => {
               const sc = getStatusCfg(issue.status);
               const StatusIcon = sc.icon;
               return (
                 <motion.div key={issue._id}
-                  initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.07, duration: 0.4 }}>
-                  <div className={`glass-card rounded-2xl overflow-hidden
+                  className="h-full"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "50px" }}
+                  transition={{ duration: 0.4 }}>
+                  <div className={`glass-card rounded-2xl flex flex-col h-full overflow-hidden
                                    hover:scale-[1.02] hover:shadow-2xl transition-all duration-300
                                    ${issue.status === "Rejected" ? "opacity-40 grayscale" : ""}`}>
                     {/* Image */}
-                    <div className="relative h-48 overflow-hidden">
+                    <div className="relative h-48 flex-shrink-0 overflow-hidden bg-[#060f1e]/40">
                       {resolveImageUrl(issue.image) ? (
                         <img src={resolveImageUrl(issue.image)} alt={issue.title}
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-400"
+                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                           onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center"
@@ -167,50 +183,65 @@ const CitizenHome = () => {
                         </div>
                       )}
                       {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#060f1e]/80 via-transparent to-transparent pointer-events-none" />
 
                       {/* Status badge */}
                       <div className={`absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1
-                                       rounded-full text-xs font-semibold border backdrop-blur-sm
+                                       rounded-full text-xs font-semibold border backdrop-blur-sm shadow-sm
                                        ${sc.bg} ${sc.color} ${sc.border}`}>
                         <StatusIcon className="h-3 w-3" />
                         {issue.status}
                       </div>
 
                       {/* Type badge */}
-                      <div className="absolute bottom-3 left-3">
-                        <span className="text-xs font-medium bg-black/40 text-white/90
-                                         backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/15">
+                      <div className="absolute bottom-3 left-3 pointer-events-none">
+                        <span className="text-xs font-medium bg-black/50 text-white/90 shadow-sm
+                                         backdrop-blur-sm px-2.5 py-1 rounded-full border border-white/10">
                           {issue.type}
                         </span>
                       </div>
                     </div>
 
-                    {/* Card body */}
-                    <div className="p-5" style={{ background: tc.cardBody }}>
-                      <h3 className="text-base font-bold leading-snug mb-1.5 line-clamp-1"
+                    {/* Card body — uses flex-grow to push footer down */}
+                    <div className="p-5 flex flex-col flex-grow" style={{ background: tc.cardBody }}>
+                      <h3 className="text-base font-bold leading-tight mb-2 line-clamp-2"
                         style={{ color: tc.textPri }}>
                         {issue.title}
                       </h3>
-                      <p className="text-sm mb-4 line-clamp-2 leading-relaxed" style={{ color: tc.textMuted }}>
+                      <p className="text-sm line-clamp-3 leading-relaxed opacity-90" style={{ color: tc.textMuted }}>
                         {issue.description}
                       </p>
 
-                      <div className="space-y-2 text-xs pt-3"
-                        style={{ color: tc.textSubtle, borderTop: `1px solid ${tc.cardBorder}` }}>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-3 w-3 flex-shrink-0" style={{ color: tc.iconAmber }} />
-                          <span className="truncate">{issue.location.address}</span>
+                      <div className="mt-auto pt-4 space-y-2.5 text-xs"
+                        style={{ color: tc.textSubtle }}>
+                        <div className="flex items-start gap-2 border-t border-white/5 pt-3">
+                          <MapPin className="h-3.5 w-3.5 flex-shrink-0 mt-0.5" style={{ color: tc.iconAmber }} />
+                          <span className="line-clamp-2 leading-snug">{issue.location.address}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <User className="h-3 w-3 flex-shrink-0" style={{ color: tc.iconMuted }} />
-                          <span>Reported by {issue.reportedBy}</span>
+                          <User className="h-3.5 w-3.5 flex-shrink-0" style={{ color: tc.iconMuted }} />
+                          <span className="truncate">Reported by {issue.reportedBy}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Clock className="h-3 w-3 flex-shrink-0" style={{ color: tc.iconMuted }} />
-                          <span>{issue.reportedAt}</span>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-3.5 w-3.5 flex-shrink-0" style={{ color: tc.iconMuted }} />
+                            <span>{new Date(issue.reportedAt).toLocaleDateString()}</span>
+                          </div>
+                          <UpvoteButton
+                            issueId={issue._id}
+                            initialCount={(issue.upvotes || []).length}
+                          />
                         </div>
                       </div>
+                    </div>
+
+                    {/* Comment section */}
+                    <div className="border-t border-white/5">
+                      <CommentSection
+                        issueId={issue._id}
+                        currentUserId={user?.id}
+                        currentRole={user?.role}
+                      />
                     </div>
                   </div>
                 </motion.div>
@@ -238,6 +269,9 @@ const CitizenHome = () => {
             </motion.div>
           )}
         </div>
+
+        {/* Trending Issues */}
+        <TrendingIssues />
       </main>
 
       {/* FAB */}

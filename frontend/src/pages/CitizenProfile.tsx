@@ -9,12 +9,19 @@ import { toast } from "sonner";
 import { VITE_BACKEND_URL } from "../config/config";
 import { motion } from "framer-motion";
 import { useThemeColors } from "../hooks/useThemeColors";
+import CommentSection from "../components/CommentSection";
 
 interface Issues {
   _id: string; title: string; description: string; issueType: string;
   location: { latitude: number; longitude: number; address: string };
-  createdAt: string; file?: string; status: string;
+  createdAt: string; media?: { url: string }; status: string;
 }
+
+const resolveImageUrl = (url: string | null | undefined) => {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) return url;
+  return `${VITE_BACKEND_URL}${url}`;
+};
 
 const statusCfg: Record<string, { color: string; bg: string; border: string; dot: string }> = {
   Resolved: { color: "text-emerald-300", bg: "bg-emerald-500/15", border: "border-emerald-500/30", dot: "bg-emerald-400" },
@@ -222,8 +229,8 @@ const CitizenProfile = () => {
                         </span>
                       </div>
 
-                      {issue.file && (
-                        <img src={`${VITE_BACKEND_URL}${issue.file}`} alt="Issue"
+                      {issue.media?.url && (
+                        <img src={resolveImageUrl(issue.media.url)} alt="Issue"
                           className="w-full h-40 object-cover rounded-xl"
                           style={{ border: `1px solid ${tc.cardBorder}` }} />
                       )}
@@ -243,6 +250,15 @@ const CitizenProfile = () => {
                           <FileText className="h-3.5 w-3.5 flex-shrink-0" style={{ color: tc.iconMuted }} />
                           <span>Type: {issue.issueType}</span>
                         </div>
+                      </div>
+
+                      {/* Comment section */}
+                      <div className="border-t border-white/5 pt-2">
+                        <CommentSection
+                          issueId={issue._id}
+                          currentUserId={user?.id}
+                          currentRole={user?.role}
+                        />
                       </div>
                     </motion.div>
                   );
