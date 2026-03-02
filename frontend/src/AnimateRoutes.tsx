@@ -12,6 +12,7 @@ import SignUp from "./pages/SignUp";
 import MapPage from "./pages/MapPage";
 import AnalyticsDashboard from "./pages/AnalyticsDashboard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import About from "./pages/About";
 
 const pageTransition = {
   initial: { opacity: 0, y: 40 },
@@ -41,6 +42,7 @@ export default function AnimatedRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
         <Route path="/" element={<MotionWrapper><Index /></MotionWrapper>} />
+        <Route path="/about" element={<MotionWrapper><About /></MotionWrapper>} />
         <Route path="/signin" element={<MotionWrapper><SignIn /></MotionWrapper>} />
         <Route path="/signup" element={<MotionWrapper><SignUp /></MotionWrapper>} />
 
