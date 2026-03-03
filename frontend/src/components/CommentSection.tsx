@@ -30,8 +30,6 @@ const CommentSection = ({ issueId, currentUserId: _userId, currentRole }: Props)
     const tc = useThemeColors();
     const token = localStorage.getItem("auth_token");
 
-    const [hasFetched, setHasFetched] = useState(false);
-
     const fetchComments = async () => {
         try {
             const res = await fetch(`${VITE_BACKEND_URL}/api/v1/issues/${issueId}/comments`, {
@@ -43,13 +41,10 @@ const CommentSection = ({ issueId, currentUserId: _userId, currentRole }: Props)
         finally { setLoading(false); }
     };
 
-    // Only load comments when the section is first opened
+    // Fetch comments on mount so the count is correct immediately
     useEffect(() => {
-        if (open && !hasFetched) {
-            setHasFetched(true);
-            fetchComments();
-        }
-    }, [open]);
+        fetchComments();
+    }, [issueId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

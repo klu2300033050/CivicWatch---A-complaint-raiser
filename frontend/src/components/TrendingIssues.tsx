@@ -39,7 +39,21 @@ const TrendingIssues = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    if (loading || trending.length === 0) return null;
+    if (loading) return (
+        <div className="flex items-center justify-center py-16">
+            <div className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm" style={{ color: tc.textSubtle }}>Loading trending issues…</p>
+            </div>
+        </div>
+    );
+
+    if (trending.length === 0) return (
+        <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <Flame className="h-10 w-10 text-orange-300 opacity-40" />
+            <p className="text-sm" style={{ color: tc.textSubtle }}>No trending issues yet. Be the first to upvote!</p>
+        </div>
+    );
 
     return (
         <section>

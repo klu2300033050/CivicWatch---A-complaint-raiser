@@ -20,7 +20,7 @@ const teamMembers = [
         socials: {
             github: "https://github.com/klu2300033050",
             linkedin: "https://www.linkedin.com/in/pasala-harsha-satya-sai-phani-bb9b56368/",
-            email: "mailto:support@civicwatch.com",
+            email: "mailto:pasalaharsha1@gmail.com",
         },
     },
     {
@@ -38,7 +38,7 @@ const teamMembers = [
         socials: {
             github: "https://github.com/rahulkaranam05",
             linkedin: "https://www.linkedin.com/in/rahulkaranam05/",
-            email: "#",
+            email: "mailto:rahulkarnam2005@gmail.com",
         },
     },
     {
@@ -56,7 +56,7 @@ const teamMembers = [
         socials: {
             github: "#",
             linkedin: "#",
-            email: "#",
+            email: "mailto:vamsimerla1@gmail.com",
         },
     },
 ];

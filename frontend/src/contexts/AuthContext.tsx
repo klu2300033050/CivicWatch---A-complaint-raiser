@@ -16,6 +16,7 @@ interface User {
   phonenumber?: string;
   department?: string;
   adminAccessCode?: string;
+  reputationPoints?: number;
 }
 
 interface AuthContextType {
@@ -95,6 +96,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           phonenumber: result.phonenumber,
           department: result.department,
           adminAccessCode: result.adminAccessCode,
+          reputationPoints: result.reputationPoints || 0,
         };
         setUser(u);
         localStorage.setItem("auth_user", JSON.stringify(u));
@@ -173,6 +175,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         phonenumber: result.user.phonenumber || "",
         department: result.user.department || "",
         adminAccessCode: result.user.adminAccessCode || "",
+        reputationPoints: result.user.reputationPoints || 0,
       };
 
       setToken(result.token);

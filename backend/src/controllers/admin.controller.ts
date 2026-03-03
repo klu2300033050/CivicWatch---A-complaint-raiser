@@ -90,6 +90,14 @@ export const updateIssueStatus = async (
       return;
     }
 
+    const existingIssue = await IssueModel.findById(id);
+    if (!existingIssue) {
+      res.status(404).json({ message: "Issue not found" });
+      return;
+    }
+
+    const previousStatus = existingIssue.status;
+
     const updatedIssue = await IssueModel.findByIdAndUpdate(
       id,
       { status },
@@ -99,6 +107,21 @@ export const updateIssueStatus = async (
     if (!updatedIssue) {
       res.status(404).json({ message: "Issue not found" });
       return;
+    }
+
+    // Reputation adjustments: Deduct 5 points if newly rejected
+    if (status === "Rejected" && previousStatus !== "Rejected" && updatedIssue.citizenId) {
+      const citizen_model = await import("../models/citizen.model");
+      await citizen_model.CitizenModel.findByIdAndUpdate(updatedIssue.citizenId, {
+        $inc: { reputationPoints: -5 }
+      });
+    }
+    // Refund 5 points if transitioning away from Rejected
+    else if (status !== "Rejected" && previousStatus === "Rejected" && updatedIssue.citizenId) {
+      const citizen_model = await import("../models/citizen.model");
+      await citizen_model.CitizenModel.findByIdAndUpdate(updatedIssue.citizenId, {
+        $inc: { reputationPoints: 5 }
+      });
     }
     // Creating a record in IssueStatusHistory for this status change
 
